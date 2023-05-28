@@ -12,6 +12,7 @@ class _ToDoScreenState extends State<ToDoScreen> {
   final TextEditingController _textEditingController =
       new TextEditingController();
   final List<String> _itemList = ["Phần tử 1", "Phần tử 2", "Phần tử 3"];
+  String dropdownValue = 'Vui long chon thiet bi cua ban';
   @override
   void initState() {
     super.initState();
@@ -24,6 +25,33 @@ class _ToDoScreenState extends State<ToDoScreen> {
       backgroundColor: Colors.black87,
       body: Column(
         children: <Widget>[
+          Row(
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.all(16.0),
+                child: DropdownButton<String>(
+                  value: dropdownValue,
+                  onChanged: (newValue) {
+                    setState(() {
+                      dropdownValue = newValue!;
+                    });
+                  },
+                  items: <String>[
+                    'Vui long chon thiet bi cua ban',
+                    'Option 1',
+                    'Option 2',
+                    'Option 3'
+                  ].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
           new Flexible(
               child: ListView.builder(
                   itemCount: _itemList.length,
