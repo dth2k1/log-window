@@ -24,6 +24,40 @@ class _ToDoScreenState extends State<ToDoScreen> {
       backgroundColor: Colors.black87,
       body: Column(
         children: <Widget>[
+         Align(
+          alignment: Alignment.topRight, // Đặt nút IconButton ở phía trên bên phải
+          child: IconButton(
+          icon: Icon(Icons.delete),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Xóa tất cả'),
+                  content: Text('Bạn có chắc chắn muốn xóa tất cả?'),
+                  actions: [
+                    TextButton(
+                      child: Text('Hủy'),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Đóng dialog
+                      },
+                    ),
+                    TextButton(
+                      child: Text('OK'),
+                      onPressed: () {
+                        setState(() {
+                          _deleteAllItems();
+                        });
+                        Navigator.of(context).pop(); // Đóng dialog
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          ),
+         ),
           new Flexible(
               child: ListView.builder(
                   itemCount: _itemList.length,
@@ -35,15 +69,6 @@ class _ToDoScreenState extends State<ToDoScreen> {
                       color: Colors.white10,
                       child: ListTile(
                         title: Text(item),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          color: Colors.redAccent,
-                          onPressed: () {
-                            setState(() {
-                              _deleteItem(index);
-                            });
-                          },
-                        ),
                         onTap: () {
                           log('vao day');
                           // Chuyển tới màn hình chi tiết và truyền tham số item
@@ -65,4 +90,10 @@ class _ToDoScreenState extends State<ToDoScreen> {
     String route = '/detail/$item';
     Routes.router.navigateTo(context, route, transition: TransitionType.fadeIn);
   }
+
+  void _deleteAllItems() {
+  setState(() {
+    _itemList.clear();
+  });
+}
 }
