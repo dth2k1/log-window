@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import '../routes.dart';
 import 'dart:developer';
+import '../models/todolist.dart';
+import '../colors/colors.dart';
+import './todo_item.dart';
 
 class ToDoScreen extends StatefulWidget {
   @override
@@ -9,60 +12,125 @@ class ToDoScreen extends StatefulWidget {
 }
 
 class _ToDoScreenState extends State<ToDoScreen> {
-  final TextEditingController _textEditingController =
-      new TextEditingController();
-  final List<String> _itemList = ["Phần tử 1", "Phần tử 2", "Phần tử 3"];
+  final todosList = ToDoList.todoList();
+  List<ToDoList> _foundToDo = [];
+  final _todoController = TextEditingController();
+
   @override
   void initState() {
+    _foundToDo = todosList;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    Routes.configureRoutes();
-    return new Scaffold(
-      backgroundColor: Colors.black87,
-      body: Column(
-        children: <Widget>[
-          new Flexible(
-              child: ListView.builder(
-                  itemCount: _itemList.length,
-                  padding: new EdgeInsets.all(8.0),
-                  reverse: false,
-                  itemBuilder: (_, int index) {
-                    final item = _itemList[index];
-                    return Card(
-                      color: Colors.white10,
-                      child: ListTile(
-                        title: Text(item),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          color: Colors.redAccent,
-                          onPressed: () {
-                            setState(() {
-                              _deleteItem(index);
-                            });
-                          },
+    return Scaffold(
+      backgroundColor: tdBGColor,
+      appBar: _buildAppBar(),
+      body: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 15,
+            ),
+            child: Column(
+              children: [
+                searchBox(),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(
+                          top: 50,
+                          bottom: 20,
                         ),
-                        onTap: () {
-                          log('vao day');
-                          // Chuyển tới màn hình chi tiết và truyền tham số item
-                          _navigateToDetailScreen(context, item);
-                        },
+                        child: Text(
+                          'Nhật ký hôm nay',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    );
-                  }))
+                      for (ToDoList todoo in _foundToDo.reversed)
+                        ToDoItem(
+                          todo: todoo,
+                          onToDoChanged: _handleToDoChange,
+                          onDeleteItem: _deleteToDoItem,
+                        ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _deleteItem(int index) {
-    _itemList.removeAt(index);
+  void _handleToDoChange(ToDoList todo) {
+    setState(() {
+      todo.isDone = !todo.isDone;
+    });
   }
 
-  void _navigateToDetailScreen(BuildContext context, String item) {
-    String route = '/detail/$item';
-    Routes.router.navigateTo(context, route, transition: TransitionType.fadeIn);
+  void _deleteToDoItem(String id) {
+    setState(() {
+      todosList.removeWhere((item) => item.id == id);
+    });
+  }
+
+  void _runFilter(String enteredKeyword) {
+    List<ToDoList> results = [];
+    if (enteredKeyword.isEmpty) {
+      results = todosList;
+    } else {
+      results = todosList
+          .where((item) => item.todoText!
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()))
+          .toList();
+    }
+
+    setState(() {
+      _foundToDo = results;
+    });
+  }
+
+  Widget searchBox() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: TextField(
+        onChanged: (value) => _runFilter(value),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(vertical: 10),
+          prefixIcon: Icon(
+            Icons.search,
+            color: tdBlack,
+            size: 20,
+          ),
+          prefixIconConstraints: BoxConstraints(
+            maxHeight: 20,
+            minWidth: 25,
+          ),
+          border: InputBorder.none,
+          hintText: 'Search',
+          hintStyle: TextStyle(color: tdGrey),
+        ),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: tdBGColor,
+      elevation: 0,
+    );
   }
 }
